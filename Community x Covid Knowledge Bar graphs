@@ -1,0 +1,40 @@
+library(ggplot2)
+library(tidyverse)
+library(RColorBrewer)
+library(ggbeeswarm)
+
+covid_attitudes <- read.csv("covid_attitudes.csv")
+summary(covid_attitudes)
+options(stringsAsFactors=FALSE)
+
+tofacta <- c(3,4,10,13,18,19,20,21,22,23,24,26,27,28,29)
+covid_attitudes[tofacta] <- lapply(covid_attitudes[,tofacta], factor)
+
+covid_attitudes.redone <- covid_attitudes %>% 
+  drop_na() %>%
+  mutate(Q9.covid_knowledge.recoded = case_when(Q9.covid_knowledge == "A moderateAmount" ~ "a moderate amount",
+                                           Q9.covid_knowledge == "A lot" ~ "a lot",
+                                           Q9.covid_knowledge == "A little" ~ "a little",
+                                           Q9.covid_knowledge == "NothingAtAll" ~ "nothing at all"),
+         Q84.community.recoded = case_when(Q84.community == "ruralArea" ~ "rural area",
+                                           TRUE ~ Q84.community),
+         Q9.covid_knowledge.recoded = factor(Q9.covid_knowledge.recoded, levels = c("nothing at all", "a little", "a moderate amount", "a lot")),
+         Q84.community.recoded = factor(Q84.community.recoded, levels = c("rural area", "suburb", "small city/town", "large city")))
+         
+ View(covid_attitudes.redone)
+ 
+ cbPalette <- c("#C4820E", "#003262","#FDB515", "#3B7EA1") #Berkeley colors
+OMCAPalette <- c("#d9d0c8", "#f37043","#475f45", "#ccae85") # OMCA colors
+
+ggplot(covid_attitudes.redone, aes(x = Q9.covid_knowledge.recoded)) +
+  geom_bar(aes(fill = Q9.covid_knowledge.recoded), position = "dodge")+
+  facet_wrap(~Q84.community.recoded) +
+  theme_bw()+
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        plot.title=element_text(hjust=0.5), 
+        legend.position = "bottom") +
+  labs(title = "Community x Covid knowledge", x = "community location", y = "people count")+
+  scale_fill_manual("Covid knowledge", values=OMCAPalette )
+  
+  ggsave("Community & Covid knowledge.png", width = 6.5, height = 5)
