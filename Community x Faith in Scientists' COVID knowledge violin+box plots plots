@@ -1,5 +1,8 @@
 ##Does the belief that scientists understand covid vary by type of community ?
 
+library(ggplot2)
+library(tidyverse)
+
 covid_attitudes.redone2 <- covid_attitudes %>% 
   drop_na() %>% 
   mutate(Q84.community.recoded = case_when(Q84.community == "ruralArea" ~ "rural area",
