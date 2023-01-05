@@ -1,0 +1,33 @@
+##Does the belief that scientists understand covid vary by type of community ?
+
+covid_attitudes.redone2 <- covid_attitudes %>% 
+  drop_na() %>% 
+  mutate(Q84.community.recoded = case_when(Q84.community == "ruralArea" ~ "rural area",
+                                           TRUE ~ Q84.community),
+         Q84.community.recoded = factor(Q84.community.recoded, levels = c("rural area", "suburb", "small city/town", "large city"))) %>% 
+  select(Q84.community.recoded, Q16.Belief_scientists_understand_covid) 
+summary(covid_attitudes.redone2)
+
+ggplot(covid_attitudes.redone2, aes(x=Q84.community.recoded, y=Q16.Belief_scientists_understand_covid, fill = Q84.community.recoded)) +
+  geom_violin(trim = FALSE, scale = "width", alpha = 0.75, draw_quantiles = c(.25, .5, .75)) +
+  geom_boxplot(width=0.3, fill = "white", color = "black") +
+  theme_classic() +
+  labs(title = "Does the belief that scientists understand covid vary by type of community?", x = "community", y = "belief level (scale 0-10)") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "bottom") +
+  ylim(0,12.5) +
+  scale_fill_manual("Community", values = cbPalette) +
+  stat_summary(fun = "mean", color="red", shape=13)
+  
+  ggsave("Community & Scientist knowledge.png", width = 6.5, height = 5)
+  
+##A closer look at the statistics:
+  
+covid_attitudes.redone2 %>% group_by(Q84.community.recoded) %>% 
+  select(Q16.Belief_scientists_understand_covid) %>% 
+  summarise_all(list(mean = mean,
+                     std = sd, 
+                     min = min, 
+                     max = max,
+                     median = median,
+                     mode = mode))
+quantile(covid_attitudes.redone2$Q16.Belief_scientists_understand_covid, digits = 4)
